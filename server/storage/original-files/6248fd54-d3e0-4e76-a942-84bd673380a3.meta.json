@@ -1,0 +1,16 @@
+{
+  "fileId": "6248fd54-d3e0-4e76-a942-84bd673380a3",
+  "originalFilename": "document3.pdf",
+  "storedFilename": "6248fd54-d3e0-4e76-a942-84bd673380a3.pdf",
+  "storedPath": "original-files/62/6248fd54-d3e0-4e76-a942-84bd673380a3.pdf",
+  "originalPath": "D:\\Startup\\Project_daedalus\\AnytingLLM\\anything-llm\\test-2.pdf",
+  "fileSize": 50,
+  "mimeType": "application/pdf",
+  "createdAt": "2025-10-04T16:04:47.956Z",
+  "subdir": "62",
+  "title": "Test Document 3",
+  "docAuthor": "Test Author",
+  "description": "Test document 3 for sharding verification",
+  "docSource": "Test upload",
+  "fileType": "pdf"
+}

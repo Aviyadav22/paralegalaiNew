@@ -1,0 +1,16 @@
+{
+  "fileId": "e32b68c5-bc67-4234-be17-09bc12eec22a",
+  "originalFilename": "document2.txt",
+  "storedFilename": "e32b68c5-bc67-4234-be17-09bc12eec22a.txt",
+  "storedPath": "original-files/e3/e32b68c5-bc67-4234-be17-09bc12eec22a.txt",
+  "originalPath": "D:\\Startup\\Project_daedalus\\AnytingLLM\\anything-llm\\test-1.txt",
+  "fileSize": 50,
+  "mimeType": "text/plain",
+  "createdAt": "2025-10-04T16:04:47.953Z",
+  "subdir": "e3",
+  "title": "Test Document 2",
+  "docAuthor": "Test Author",
+  "description": "Test document 2 for sharding verification",
+  "docSource": "Test upload",
+  "fileType": "txt"
+}

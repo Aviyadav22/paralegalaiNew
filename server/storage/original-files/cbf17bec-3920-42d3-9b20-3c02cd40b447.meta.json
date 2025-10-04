@@ -1,0 +1,16 @@
+{
+  "fileId": "cbf17bec-3920-42d3-9b20-3c02cd40b447",
+  "originalFilename": "document4.txt",
+  "storedFilename": "cbf17bec-3920-42d3-9b20-3c02cd40b447.txt",
+  "storedPath": "original-files/cb/cbf17bec-3920-42d3-9b20-3c02cd40b447.txt",
+  "originalPath": "D:\\Startup\\Project_daedalus\\AnytingLLM\\anything-llm\\test-3.txt",
+  "fileSize": 50,
+  "mimeType": "text/plain",
+  "createdAt": "2025-10-04T16:04:47.958Z",
+  "subdir": "cb",
+  "title": "Test Document 4",
+  "docAuthor": "Test Author",
+  "description": "Test document 4 for sharding verification",
+  "docSource": "Test upload",
+  "fileType": "txt"
+}
