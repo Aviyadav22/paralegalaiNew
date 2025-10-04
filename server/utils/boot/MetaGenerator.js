@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 /**
  * @typedef MetaTagDefinition
  * @property {('link'|'meta')} tag - the type of meta tag element
@@ -33,6 +36,28 @@ class MetaGenerator {
 
   #log(text, ...args) {
     console.log(`\x1b[36m[${this.name}]\x1b[0m ${text}`, ...args);
+  }
+
+  #getBuiltAssets() {
+    try {
+      const distPath = path.resolve(__dirname, "../../../frontend/dist");
+      const files = fs.readdirSync(distPath);
+      
+      // Find the actual built JS and CSS files
+      const jsFile = files.find(file => file.startsWith('index.') && file.endsWith('.js'));
+      const cssFile = files.find(file => file.startsWith('index.') && file.endsWith('.css'));
+      
+      return {
+        js: jsFile ? `/${jsFile}` : '/index.js',
+        css: cssFile ? `/${cssFile}` : '/index.css'
+      };
+    } catch (error) {
+      console.error("Error detecting built assets, falling back to default:", error.message);
+      return {
+        js: '/index.js',
+        css: '/index.css'
+      };
+    }
   }
 
   #defaultMeta() {
@@ -213,6 +238,7 @@ class MetaGenerator {
    */
   async generate(response, code = 200) {
     if (this.#customConfig === null) await this.#fetchConfg();
+    const assets = this.#getBuiltAssets();
     response.status(code).send(`
        <!DOCTYPE html>
         <html lang="en">
@@ -220,8 +246,8 @@ class MetaGenerator {
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             ${this.#assembleMeta()}
-            <script type="module" crossorigin src="/index.js"></script>
-            <link rel="stylesheet" href="/index.css">
+            <script type="module" crossorigin src="${assets.js}"></script>
+            <link rel="stylesheet" href="${assets.css}">
           </head>
           <body>
             <div id="root" class="h-screen"></div>

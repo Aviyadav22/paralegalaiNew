@@ -7,6 +7,7 @@ const {
   writeToServerDocuments,
 } = require("../../utils/files");
 const { default: slugify } = require("slugify");
+const { storeOriginalFile } = require("../../../server/utils/originalFiles");
 
 async function asTxt({
   fullFilePath = "",
@@ -32,6 +33,20 @@ async function asTxt({
   }
 
   console.log(`-- Working ${filename} --`);
+  
+  // Store the original file before processing
+  const originalFileResult = await storeOriginalFile({
+    originalFilePath: fullFilePath,
+    filename: filename,
+    metadata: {
+      title: metadata.title || filename,
+      docAuthor: metadata.docAuthor || "Unknown",
+      description: metadata.description || "Unknown",
+      docSource: metadata.docSource || "a text file uploaded by the user.",
+      fileType: "text"
+    }
+  });
+
   const data = {
     id: v4(),
     url: "file://" + fullFilePath,
@@ -44,6 +59,10 @@ async function asTxt({
     wordCount: content.split(" ").length,
     pageContent: content,
     token_count_estimate: tokenizeString(content),
+    // Add original file information for citations
+    originalFileId: originalFileResult.success ? originalFileResult.fileId : null,
+    originalFileName: filename,
+    originalFileType: "text"
   };
 
   const document = writeToServerDocuments({

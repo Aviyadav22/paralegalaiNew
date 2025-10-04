@@ -29,6 +29,7 @@ const { communityHubEndpoints } = require("./endpoints/communityHub");
 const { agentFlowEndpoints } = require("./endpoints/agentFlows");
 const { mcpServersEndpoints } = require("./endpoints/mcpServers");
 const { mobileEndpoints } = require("./endpoints/mobile");
+const { apiOriginalFilesEndpoints } = require("./endpoints/api/originalFiles");
 const { httpLogger } = require("./middleware/httpLogger");
 const app = express();
 const apiRouter = express.Router();
@@ -79,6 +80,7 @@ communityHubEndpoints(apiRouter);
 agentFlowEndpoints(apiRouter);
 mcpServersEndpoints(apiRouter);
 mobileEndpoints(apiRouter);
+apiOriginalFilesEndpoints(apiRouter);
 
 // Externally facing embedder endpoints
 embeddedEndpoints(apiRouter);
@@ -91,7 +93,7 @@ if (process.env.NODE_ENV !== "development") {
   const IndexPage = new MetaGenerator();
 
   app.use(
-    express.static(path.resolve(__dirname, "public"), {
+    express.static(path.resolve(__dirname, "../frontend/dist"), {
       extensions: ["js"],
       setHeaders: (res) => {
         // Disable I-framing of entire site UI
@@ -101,7 +103,7 @@ if (process.env.NODE_ENV !== "development") {
     })
   );
 
-  app.use("/", function (_, response) {
+  app.get(/^\/(?!api).*/, function (_, response) {
     IndexPage.generate(response);
     return;
   });

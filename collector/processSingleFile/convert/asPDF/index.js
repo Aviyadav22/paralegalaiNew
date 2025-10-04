@@ -8,6 +8,7 @@ const { tokenizeString } = require("../../../utils/tokenizer");
 const { default: slugify } = require("slugify");
 const PDFLoader = require("./PDFLoader");
 const OCRLoader = require("../../../utils/OCRLoader");
+const { storeOriginalFile } = require("../../../../server/utils/originalFiles");
 
 async function asPdf({
   fullFilePath = "",
@@ -53,6 +54,20 @@ async function asPdf({
   }
 
   const content = pageContent.join("");
+  
+  // Store the original PDF file before processing
+  const originalFileResult = await storeOriginalFile({
+    originalFilePath: fullFilePath,
+    filename: filename,
+    metadata: {
+      title: metadata.title || filename,
+      docAuthor: metadata.docAuthor || docs[0]?.metadata?.pdf?.info?.Creator || "no author found",
+      description: metadata.description || docs[0]?.metadata?.pdf?.info?.Title || "No description found.",
+      docSource: metadata.docSource || "pdf file uploaded by the user.",
+      fileType: "pdf"
+    }
+  });
+
   const data = {
     id: v4(),
     url: "file://" + fullFilePath,
@@ -71,6 +86,10 @@ async function asPdf({
     wordCount: content.split(" ").length,
     pageContent: content,
     token_count_estimate: tokenizeString(content),
+    // Add original file information for citations
+    originalFileId: originalFileResult.success ? originalFileResult.fileId : null,
+    originalFileName: filename,
+    originalFileType: "pdf"
   };
 
   const document = writeToServerDocuments({

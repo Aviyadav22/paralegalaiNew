@@ -58,12 +58,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // These settings ensure the primary JS and CSS file references are always index.{js,css}
-        // so we can SSR the index.html as text response from server/index.js without breaking references each build.
-        entryFileNames: 'index.js',
+        // Add cache busting with timestamp
+        entryFileNames: `index.[hash].js`,
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'index.css') return `index.css`;
-          return assetInfo.name;
+          if (assetInfo.name === 'index.css') return `index.[hash].css`;
+          return `[name].[hash].[ext]`;
         },
       },
       external: [

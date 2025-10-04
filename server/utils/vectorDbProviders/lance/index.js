@@ -299,7 +299,9 @@ const LanceDb = {
           for (const chunk of chunks) {
             chunk.forEach((chunk) => {
               const id = uuidv4();
-              const { id: _id, ...metadata } = chunk.metadata;
+              const { id: _id, ...chunkMetadata } = chunk.metadata;
+              // Ensure originalFileId is included in metadata even from cache
+              const metadata = { ...chunkMetadata, ...metadata };
               documentVectors.push({ docId, vectorId: id });
               submissions.push({ id: id, vector: chunk.values, ...metadata });
             });
@@ -348,6 +350,7 @@ const LanceDb = {
             // https://github.com/hwchase17/langchainjs/blob/2def486af734c0ca87285a48f1a04c057ab74bdf/langchain/src/vectorstores/pinecone.ts#L64
             metadata: { ...metadata, text: textChunks[i] },
           };
+          
 
           vectors.push(vectorRecord);
           submissions.push({

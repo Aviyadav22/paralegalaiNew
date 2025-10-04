@@ -14,6 +14,8 @@ import {
   YoutubeLogo,
   LinkSimple,
   GitlabLogo,
+  Download,
+  Eye,
 } from "@phosphor-icons/react";
 import ConfluenceLogo from "@/media/dataConnectors/confluence.png";
 import DrupalWikiLogo from "@/media/dataConnectors/drupalwiki.png";
@@ -26,7 +28,24 @@ import useTextSize from "@/hooks/useTextSize";
 function combineLikeSources(sources) {
   const combined = {};
   sources.forEach((source) => {
-    const { id, title, text, chunkSource = "", score = null } = source;
+    const {
+      id,
+      title,
+      text,
+      chunkSource = "",
+      score = null,
+      metadata = {},
+      originalFileId,
+      originalFileName,
+      originalFileType,
+    } = source;
+
+    // ✅ fallback: take top-level first, then metadata
+    const fileId = originalFileId || metadata?.originalFileId;
+    const fileName = originalFileName || metadata?.originalFileName;
+    const fileType = originalFileType || metadata?.originalFileType;
+    
+    
     if (combined.hasOwnProperty(title)) {
       combined[title].chunks.push({ id, text, chunkSource, score });
       combined[title].references += 1;
@@ -35,6 +54,9 @@ function combineLikeSources(sources) {
         title,
         chunks: [{ id, text, chunkSource, score }],
         references: 1,
+        originalFileId: fileId,
+        originalFileName: fileName,
+        originalFileType: fileType,
       };
     }
   });
@@ -98,6 +120,7 @@ const Citation = memo(({ source, onClick, textSizeClass }) => {
     ? ICONS[chunkSourceInfo.icon]
     : ICONS.file;
 
+
   return (
     <button
       className={`flex doc__source gap-x-1 ${textSizeClass}`}
@@ -128,10 +151,33 @@ function omitChunkHeader(text) {
 
 function CitationDetailModal({ source, onClose }) {
   const { references, title, chunks } = source;
+  const originalFileId = source.originalFileId || source.metadata?.originalFileId;
+  const originalFileName = source.originalFileName || source.metadata?.originalFileName;
+  const originalFileType = source.originalFileType || source.metadata?.originalFileType;
   const { isUrl, text: webpageUrl, href: linkTo } = parseChunkSource(source);
+  
+  
+  const handleDownloadOriginal = () => {
+    if (originalFileId) {
+      const downloadUrl = `/api/original-files/${originalFileId}`;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = originalFileName || 'original-file';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleViewPDF = () => {
+    if (originalFileId) {
+      const viewUrl = `/api/original-files/${originalFileId}`;
+      window.open(viewUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    }
+  };
 
   return (
-    <ModalWrapper isOpen={source}>
+    <ModalWrapper isOpen={!!source}>
       <div className="w-full max-w-2xl bg-theme-bg-secondary rounded-lg shadow border-2 border-theme-modal-border overflow-hidden">
         <div className="relative p-6 border-b rounded-t border-theme-modal-border">
           <div className="w-full flex gap-x-2 items-center">
@@ -159,6 +205,31 @@ function CitationDetailModal({ source, onClose }) {
             <p className="text-xs text-gray-400 mt-2">
               Referenced {references} times.
             </p>
+          )}
+          
+          
+          {originalFileId && (
+            <div className="mt-3 flex items-center gap-x-2">
+              <button
+                onClick={handleViewPDF}
+                type="button"
+                className="flex items-center gap-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200"
+              >
+                <Eye size={16} />
+                View {originalFileType?.toUpperCase() || 'File'}
+              </button>
+              <button
+                onClick={handleDownloadOriginal}
+                type="button"
+                className="flex items-center gap-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors duration-200"
+              >
+                <Download size={16} />
+                Download Original {originalFileType?.toUpperCase() || 'File'}
+              </button>
+              <span className="text-xs text-gray-400">
+                {originalFileName}
+              </span>
+            </div>
           )}
           <button
             onClick={onClose}
