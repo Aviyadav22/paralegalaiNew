@@ -67,8 +67,13 @@ const QDrant = {
       with_payload: true,
     });
 
-    responses.forEach((response) => {
-      if (response.score < similarityThreshold) return;
+    console.log(`[QdrantDebug] Found ${responses.length} responses, threshold: ${similarityThreshold}`);
+    responses.forEach((response, index) => {
+      console.log(`[QdrantDebug] Response ${index}: score=${response.score.toFixed(4)}, title=${response?.payload?.title?.substring(0, 50) || 'no title'}`);
+      if (response.score < similarityThreshold) {
+        console.log(`[QdrantDebug] Filtered out due to low score: ${response.score.toFixed(4)} < ${similarityThreshold}`);
+        return;
+      }
       if (filterIdentifiers.includes(sourceIdentifier(response?.payload))) {
         console.log(
           "QDrant: A source was filtered from context as it's parent document is pinned."

@@ -5,6 +5,8 @@ const { Telemetry } = require("./telemetry");
 const { EventLogs } = require("./eventLogs");
 const { safeJsonParse } = require("../utils/http");
 const { getModelTag } = require("../endpoints/utils");
+const { LegalMetadataExtractor } = require("../utils/legalMetadataExtractor");
+const { LegalJudgmentMetadata } = require("./legalJudgmentMetadata");
 
 const Document = {
   writable: ["pinned", "watched", "lastUpdatedAt"],
@@ -121,6 +123,22 @@ const Document = {
       try {
         await prisma.workspace_documents.create({ data: newDoc });
         embedded.push(path);
+
+        // Extract and store legal metadata in PostgreSQL
+        try {
+          const legalMetadata = await LegalMetadataExtractor.extract(data);
+          if (legalMetadata) {
+            await LegalJudgmentMetadata.create({
+              doc_id: docId,
+              workspace_id: workspace.id,
+              ...legalMetadata,
+            });
+            console.log(`[LegalMetadata] Stored metadata for doc ${docId}`);
+          }
+        } catch (metadataError) {
+          // Don't fail document upload if metadata extraction fails
+          console.error(`[LegalMetadata] Failed to store:`, metadataError.message);
+        }
       } catch (error) {
         console.error(error.message);
       }
@@ -166,6 +184,14 @@ const Document = {
         await prisma.document_vectors.deleteMany({
           where: { docId: document.docId },
         });
+
+        // Delete legal metadata from PostgreSQL
+        try {
+          await LegalJudgmentMetadata.delete(document.docId);
+          console.log(`[LegalMetadata] Deleted metadata for doc ${document.docId}`);
+        } catch (metadataError) {
+          console.error(`[LegalMetadata] Failed to delete:`, metadataError.message);
+        }
       } catch (error) {
         console.error(error.message);
       }

@@ -1,0 +1,41 @@
+[36m[EncryptionManager][0m Loaded existing key & salt for encrypting arbitrary data.
+[35m[TokenManager][0m Initialized new TokenManager instance for model: gpt-3.5-turbo
+[35m[TokenManager][0m Returning existing instance for model: gpt-3.5-turbo
+[32m[TELEMETRY ENABLED][0m Anonymous Telemetry enabled. Telemetry helps Mintplex Labs Inc improve AnythingLLM.
+prisma:info Starting a sqlite pool with 5 connections.
+[32m[TELEMETRY SENT][0m {
+  event: 'server_boot',
+  distinctId: '5b2e5607-2046-4349-af6c-6f5303371e40',
+  properties: {
+    commit: '27f92f3a7907a4611e2c0fd95cb917bc4c08775a',
+    runtime: 'other'
+  }
+}
+[36m[CommunicationKey][0m RSA key pair generated for signed payloads within AnythingLLM services.
+[36m[EncryptionManager][0m Loaded existing key & salt for encrypting arbitrary data.
+Primary server in HTTP mode listening on port 3001
+[36m[BackgroundWorkerService][0m Starting...
+[36m[BackgroundWorkerService][0m Service started with 1 jobs [ 'cleanup-orphan-documents' ]
+[32m[PostgreSQL][0m Connection pool initialized
+[32m[LegalJudgmentMetadata][0m Deleted metadata for doc_id: eea1c243-3507-4f17-bee2-84cc37d21f76
+[LegalMetadata] Deleted metadata for doc eea1c243-3507-4f17-bee2-84cc37d21f76
+[32m[Event Logged][0m - workspace_documents_removed
+[32m[LegalJudgmentMetadata][0m Deleted metadata for doc_id: 39a77a9f-00b8-4d3a-bb33-44957436dbcc
+[LegalMetadata] Deleted metadata for doc 39a77a9f-00b8-4d3a-bb33-44957436dbcc
+[32m[LegalJudgmentMetadata][0m Deleted metadata for doc_id: 80a14477-621d-4287-aab3-7b1e4de6b6be
+[LegalMetadata] Deleted metadata for doc 80a14477-621d-4287-aab3-7b1e4de6b6be
+[32m[Event Logged][0m - workspace_documents_removed
+Purging vector-cache of custom-documents/ALLEGED-RAPE-AND-MURDER-INCIDENT-OF-A-TRAINEE-DOCT-VS-MATTER-(20-08-2024).pdf-019bdad8-be1a-4c2a-901b-37069347dcb6.json.
+Purging source document of custom-documents/ALLEGED-RAPE-AND-MURDER-INCIDENT-OF-A-TRAINEE-DOCT-VS-MATTER-(20-08-2024).pdf-019bdad8-be1a-4c2a-901b-37069347dcb6.json.
+[32m[Event Logged][0m - workspace_documents_removed
+Purging vector-cache of custom-documents/ARVIND-KEJRIWAL-VS-CENTRAL-BUREAU-OF-INVESTIGATIONCrl.A.-No.-38162024-(13-09-2024).pdf-f4f19441-8619-47df-b9ec-2d4ff054dd8b.json.
+Purging source document of custom-documents/ARVIND-KEJRIWAL-VS-CENTRAL-BUREAU-OF-INVESTIGATIONCrl.A.-No.-38162024-(13-09-2024).pdf-f4f19441-8619-47df-b9ec-2d4ff054dd8b.json.
+[32m[Event Logged][0m - workspace_documents_removed
+Purging vector-cache of custom-documents/ASSOCIATION-FOR-DEMOCRATIC-REFORMS-VS-ELECTION-COMMISSION-OF-INDIAW.P.(C)-No.-4342023-(26-04-2024).pdf-4b7d541b-268d-4faf-9e49-e75d276183da.json.
+Purging source document of custom-documents/ASSOCIATION-FOR-DEMOCRATIC-REFORMS-VS-ELECTION-COMMISSION-OF-INDIAW.P.(C)-No.-4342023-(26-04-2024).pdf-4b7d541b-268d-4faf-9e49-e75d276183da.json.
+[32m[Event Logged][0m - workspace_documents_removed
+prisma:info Starting a sqlite pool with 5 connections.
+[33m[66426:66866][0m: No direct uploads path found - exiting.
+[33m[66426:66866][0m: No direct uploads path found - exiting. { service: 'bg-worker', origin: 'cleanup-orphan-documents' }
+Child process exited with code 0 and signal null
+Worker for job "cleanup-orphan-documents" exited with code 0 undefined

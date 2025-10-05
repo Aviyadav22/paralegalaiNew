@@ -5,6 +5,7 @@ const { WorkspaceParsedFiles } = require("../../models/workspaceParsedFiles");
 const { getVectorDbClass, getLLMProvider } = require("../helpers");
 const { writeResponseChunk } = require("../helpers/chat/responses");
 const { grepAgents } = require("./agents");
+const { HybridSearchManager } = require("../hybridSearch");
 const {
   grepCommand,
   VALID_COMMANDS,
@@ -147,9 +148,37 @@ async function streamChatWithWorkspace(
     });
   });
 
-  const vectorSearchResults =
-    embeddingsCount !== 0
-      ? await VectorDb.performSimilaritySearch({
+  // PHASE 1: Hybrid Search with PostgreSQL + Qdrant
+  // Use hybrid search if embeddings exist, combining metadata filtering with vector search
+  let vectorSearchResults = {
+    contextTexts: [],
+    sources: [],
+    message: null,
+  };
+
+  if (embeddingsCount !== 0) {
+    try {
+      const hybridResults = await HybridSearchManager.search({
+        query: updatedMessage,
+        workspace,
+        vectorDbInstance: VectorDb,
+        llmConnector: LLMConnector,
+        similarityThreshold: workspace?.similarityThreshold,
+        topN: workspace?.topN,
+        filters: {},
+        rerankOptions: {
+          vectorWeight: 0.7,
+          metadataWeight: 0.1,
+          rerankerWeight: 0.2,
+        },
+      });
+
+      if (hybridResults && hybridResults.sources && hybridResults.sources.length > 0) {
+        vectorSearchResults = hybridResults;
+        console.log(`[HybridSearch] Returned ${hybridResults.sources.length} results for chat`);
+      } else {
+        console.log(`[HybridSearch] No results, falling back to vector search`);
+        vectorSearchResults = await VectorDb.performSimilaritySearch({
           namespace: workspace.slug,
           input: updatedMessage,
           LLMConnector,
@@ -157,12 +186,22 @@ async function streamChatWithWorkspace(
           topN: workspace?.topN,
           filterIdentifiers: pinnedDocIdentifiers,
           rerank: workspace?.vectorSearchMode === "rerank",
-        })
-      : {
-          contextTexts: [],
-          sources: [],
-          message: null,
-        };
+        });
+      }
+    } catch (hybridError) {
+      console.error(`[HybridSearch] Fallback to vector-only:`, hybridError.message);
+      // Fallback to traditional vector search
+      vectorSearchResults = await VectorDb.performSimilaritySearch({
+        namespace: workspace.slug,
+        input: updatedMessage,
+        LLMConnector,
+        similarityThreshold: workspace?.similarityThreshold,
+        topN: workspace?.topN,
+        filterIdentifiers: pinnedDocIdentifiers,
+        rerank: workspace?.vectorSearchMode === "rerank",
+      });
+    }
+  }
 
   // Failed similarity search if it was run at all and failed.
   if (!!vectorSearchResults.message) {
