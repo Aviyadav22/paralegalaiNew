@@ -2,18 +2,18 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Uncomment the following lines and comment out the SQLite datasource block above to use PostgreSQL
-// Make sure to set the correct DATABASE_URL in your .env file
-// After swapping run `yarn prisma:setup` from the root directory to migrate the database
-//
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
+// PostgreSQL datasource (PRODUCTION - Scalable for 50K+ PDFs and 100+ concurrent users)
 datasource db {
-  provider = "sqlite"
-  url      = "file:../storage/anythingllm.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+// SQLite datasource (DEPRECATED - Only for local development or migration reference)
+// Uncomment below and comment out PostgreSQL if you need to rollback
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:../storage/anythingllm.db"
+// }
 
 model api_keys {
   id            Int      @id @default(autoincrement())
@@ -390,4 +390,28 @@ model workspace_parsed_files {
 
   @@index([workspaceId])
   @@index([userId])
+}
+
+model original_files {
+  id               Int      @id @default(autoincrement())
+  fileId           String   @unique
+  originalFilename String
+  storedFilename   String
+  storedPath       String
+  originalPath     String?
+  fileSize         Int
+  mimeType         String
+  subdir           String
+  storageMode      String   @default("local")
+  blobUrl          String?
+  blobName         String?
+  title            String?
+  docAuthor        String?
+  description      String?
+  docSource        String?
+  fileType         String?
+  createdAt        DateTime @default(now())
+  lastUpdatedAt    DateTime @default(now())
+
+  @@index([fileId])
 }

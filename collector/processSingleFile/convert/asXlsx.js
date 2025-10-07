@@ -11,6 +11,7 @@ const {
 } = require("../../utils/files");
 const { tokenizeString } = require("../../utils/tokenizer");
 const { default: slugify } = require("slugify");
+const { storeOriginalFile } = require("../../../server/utils/originalFiles");
 
 function convertToCSV(data) {
   return data
@@ -42,6 +43,19 @@ async function asXlsx({
     ? path.resolve(directUploadsFolder, folderName)
     : path.resolve(documentsFolder, folderName);
 
+  // Store the original XLSX file before processing
+  const originalFileResult = await storeOriginalFile({
+    originalFilePath: fullFilePath,
+    filename: filename,
+    metadata: {
+      title: metadata.title || filename,
+      docAuthor: metadata.docAuthor || "Unknown",
+      description: metadata.description || "Spreadsheet file",
+      docSource: metadata.docSource || "an xlsx file uploaded by the user.",
+      fileType: "xlsx"
+    }
+  });
+
   try {
     const workSheetsFromFile = xlsx.parse(fullFilePath);
     if (!fs.existsSync(outFolderPath))
@@ -71,6 +85,10 @@ async function asXlsx({
           wordCount: content.split(/\s+/).length,
           pageContent: content,
           token_count_estimate: tokenizeString(content),
+          // Add original file information for citations
+          originalFileId: originalFileResult.success ? originalFileResult.fileId : null,
+          originalFileName: filename,
+          originalFileType: "xlsx"
         };
 
         const document = writeToServerDocuments({

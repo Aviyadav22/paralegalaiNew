@@ -41,8 +41,14 @@ class PostgresConnectionManager {
     }
 
     if (!this.pool) {
+      const connectionString = process.env.POSTGRES_CONNECTION_STRING;
+      // Enable SSL for Azure or when sslmode=require is present in the URL
+      const needsSSL = /sslmode=require/i.test(connectionString || "") ||
+        /postgres\.database\.azure\.com/i.test(connectionString || "");
+
       this.pool = new Pool({
-        connectionString: process.env.POSTGRES_CONNECTION_STRING,
+        connectionString,
+        ssl: needsSSL ? { rejectUnauthorized: false } : undefined,
         // Connection pool settings
         max: 20, // Maximum number of clients in pool
         idleTimeoutMillis: 30000, // Close idle clients after 30s
@@ -55,6 +61,7 @@ class PostgresConnectionManager {
       });
 
       console.log("\x1b[32m[PostgreSQL]\x1b[0m Connection pool initialized");
+      console.log("\x1b[36m[PostgreSQL]\x1b[0m SSL:", needsSSL ? "enabled" : "disabled");
     }
 
     return this.pool;

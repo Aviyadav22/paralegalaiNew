@@ -1,4 +1,5 @@
 const { getOriginalFilePath, getOriginalFileMetadata } = require("../../utils/originalFiles");
+const azureBlobStorage = require("../../utils/AzureBlobStorage");
 const path = require("path");
 
 function apiOriginalFilesEndpoints(app) {
@@ -57,7 +58,7 @@ function apiOriginalFilesEndpoints(app) {
         });
       }
 
-      // Get file path
+      // Get file path or blob name
       const fileResult = await getOriginalFilePath(fileId);
       if (!fileResult.success) {
         return response.status(404).json({
@@ -69,21 +70,56 @@ function apiOriginalFilesEndpoints(app) {
       // Set appropriate headers for inline viewing
       response.setHeader('Content-Type', metadata.mimeType);
       response.setHeader('Content-Disposition', `inline; filename="${metadata.originalFilename}"`);
-      response.setHeader('Content-Length', metadata.fileSize);
       response.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
 
-      // Send the file
-      response.sendFile(fileResult.filePath, (err) => {
-        if (err) {
-          console.error("Error sending file:", err);
+      // Serve file based on storage mode
+      if (fileResult.storageMode === "azure") {
+        // Stream from Azure Blob Storage
+        const streamResult = await azureBlobStorage.getFileStream(fileResult.blobName);
+        
+        if (!streamResult.success) {
+          return response.status(500).json({
+            success: false,
+            error: "Error retrieving file from Azure Blob Storage"
+          });
+        }
+
+        // Set content length if available
+        if (streamResult.properties && streamResult.properties.contentLength) {
+          response.setHeader('Content-Length', streamResult.properties.contentLength);
+        } else if (metadata.fileSize) {
+          response.setHeader('Content-Length', metadata.fileSize);
+        }
+
+        // Pipe the stream to response
+        streamResult.stream.pipe(response);
+        
+        streamResult.stream.on('error', (err) => {
+          console.error("Error streaming file from Azure:", err);
           if (!response.headersSent) {
             response.status(500).json({
               success: false,
-              error: "Error serving file"
+              error: "Error streaming file"
             });
           }
-        }
-      });
+        });
+
+      } else {
+        // Serve from local filesystem
+        response.setHeader('Content-Length', metadata.fileSize);
+        
+        response.sendFile(fileResult.filePath, (err) => {
+          if (err) {
+            console.error("Error sending file:", err);
+            if (!response.headersSent) {
+              response.status(500).json({
+                success: false,
+                error: "Error serving file"
+              });
+            }
+          }
+        });
+      }
 
     } catch (error) {
       console.error("Error in original files endpoint:", error);

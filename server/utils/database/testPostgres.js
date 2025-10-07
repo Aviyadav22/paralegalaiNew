@@ -7,6 +7,9 @@
  *   node server/utils/database/testPostgres.js
  */
 
+// Load environment variables when running directly
+require("dotenv").config();
+
 const { postgresManager } = require("./postgres");
 const { LegalJudgmentMetadata } = require("../../models/legalJudgmentMetadata");
 const { runAllMigrations } = require("./runMigrations");
@@ -17,6 +20,10 @@ async function runTests() {
   console.log("=".repeat(60) + "\n");
 
   try {
+    // Debug: Check env var presence
+    const hasConn = !!process.env.POSTGRES_CONNECTION_STRING;
+    console.log("Env POSTGRES_CONNECTION_STRING present:", hasConn);
+
     // Test 1: Check if PostgreSQL is configured
     console.log("Test 1: Checking PostgreSQL configuration...");
     if (!postgresManager.isEnabled) {

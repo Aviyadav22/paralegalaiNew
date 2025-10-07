@@ -7,6 +7,7 @@ const {
 } = require("../../utils/files");
 const { tokenizeString } = require("../../utils/tokenizer");
 const { default: slugify } = require("slugify");
+const { storeOriginalFile } = require("../../../server/utils/originalFiles");
 
 async function asDocX({
   fullFilePath = "",
@@ -36,6 +37,20 @@ async function asDocX({
   }
 
   const content = pageContent.join("");
+  
+  // Store the original DOCX file before processing
+  const originalFileResult = await storeOriginalFile({
+    originalFilePath: fullFilePath,
+    filename: filename,
+    metadata: {
+      title: metadata.title || filename,
+      docAuthor: metadata.docAuthor || "no author found",
+      description: metadata.description || "No description found.",
+      docSource: metadata.docSource || "docx file uploaded by the user.",
+      fileType: "docx"
+    }
+  });
+
   const data = {
     id: v4(),
     url: "file://" + fullFilePath,
@@ -48,6 +63,10 @@ async function asDocX({
     wordCount: content.split(" ").length,
     pageContent: content,
     token_count_estimate: tokenizeString(content),
+    // Add original file information for citations
+    originalFileId: originalFileResult.success ? originalFileResult.fileId : null,
+    originalFileName: filename,
+    originalFileType: "docx"
   };
 
   const document = writeToServerDocuments({
